@@ -14,7 +14,23 @@ export async function GET(req: NextRequest) {
   try {
     // Backend'den video için DRM/HLS kaynak URL'i al
     const stream = await api.getStream(id);
-    const originUrl = stream.drm_url; // gerçek m3u8
+    // Eğer backend DRM bilgisi dönüyorsa doğrudan bunu ilet
+    if (stream?.drm?.manifestUrl && stream?.drm?.licenseServers) {
+      return new Response(
+        JSON.stringify({
+          drm: {
+            manifestUrl: stream.drm.manifestUrl,
+            licenseServers: stream.drm.licenseServers,
+            fairplayCertUrl: stream.drm.fairplayCertUrl,
+          },
+        }),
+        { headers: { "content-type": "application/json" } }
+      );
+    }
+
+    // Aksi halde HLS proxy akışını üret
+    const originUrl = stream.hls_url || stream.drm_url; // gerçek m3u8
+    if (!originUrl) throw new Error("no origin");
 
     const now = Date.now();
     const expires = now + 15 * 60 * 1000; // 15 dk

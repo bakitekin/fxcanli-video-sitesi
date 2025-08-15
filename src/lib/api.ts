@@ -46,6 +46,20 @@ async function request<T>(
 }
 
 // Auth
+export type StreamResponse =
+  | {
+      drm: {
+        manifestUrl: string;
+        licenseServers: Record<string, string>;
+        fairplayCertUrl?: string;
+      };
+    }
+  | {
+      drm?: undefined;
+      hls_url?: string;
+      drm_url?: string;
+    };
+
 export const api = {
   register: (data: {
     full_name: string;
@@ -62,7 +76,7 @@ export const api = {
   // Videos
   listVideos: () =>
     request<Array<{ id: string; title: string; description?: string }>>("/videos"),
-  getStream: (id: string) => request<{ drm_url: string }>(`/videos/stream/${id}`),
+  getStream: (id: string) => request<StreamResponse>(`/videos/stream/${id}`),
 
   // Admin
   uploadVideo: (payload: { title: string; description?: string; drm_url: string }) =>
