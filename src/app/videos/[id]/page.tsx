@@ -1,23 +1,25 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import Sidebar from '@/components/layouts/Sidebar';
 import Header from '@/components/layouts/Header';
 import VideoPlayer from '@/components/ui/VideoPlayer';
 import { api } from '@/lib/api';
 
-export default function VideoDetailPage({ params }: { params: { id: string } }) {
+export default function VideoDetailPage() {
   const [src, setSrc] = useState<string>('');
   const [me, setMe] = useState<{ full_name: string; tc_no: string } | null>(null);
   const [loading, setLoading] = useState(true);
-  const id = params.id;
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
 
   useEffect(() => {
     (async () => {
       try {
         const meRes = await api.me();
         setMe({ full_name: meRes.full_name, tc_no: meRes.tc_no });
-        const stream = await api.getStream(id);
-        setSrc(stream.drm_url);
+        const proxied = await fetch(`/api/videos/stream/${id}`, { credentials: 'include' }).then(r=>r.json());
+        setSrc(proxied.m3u8);
       } catch (e) {
         console.error(e);
       } finally {

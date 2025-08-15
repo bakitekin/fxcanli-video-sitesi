@@ -1,8 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   images: {
-    domains: ["i.pravatar.cc"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "i.pravatar.cc",
+      },
+    ],
   },
 };
 

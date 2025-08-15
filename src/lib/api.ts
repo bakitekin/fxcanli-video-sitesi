@@ -2,35 +2,43 @@ export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-async function request<T>(path: string, method: HttpMethod = "GET", body?: any, opts?: RequestInit): Promise<T> {
+async function request<T>(
+  path: string,
+  method: HttpMethod = "GET",
+  body?: unknown,
+  opts?: RequestInit
+): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
   try {
-    const res = await fetch(`${API_BASE_URL}${path}`,[
-      method !== "GET" && method !== "HEAD"
+    const baseInit: RequestInit = {
+      method,
+      credentials: "include",
+      mode: "cors",
+      signal: controller.signal,
+      ...opts,
+    };
+    const init: RequestInit =
+      method !== "GET"
         ? {
-            method,
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            mode: "cors",
-            signal: controller.signal,
+            ...baseInit,
+            headers: { "Content-Type": "application/json", ...(opts?.headers || {}) },
             body: body ? JSON.stringify(body) : undefined,
-            ...opts,
           }
-        : { method, credentials: "include", mode: "cors", signal: controller.signal, ...opts },
-    ].reduce((a, b) => ({ ...a, ...b })));
+        : baseInit;
+
+    const res = await fetch(`${API_BASE_URL}${path}`, init);
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       throw new Error(text || `API error: ${res.status}`);
     }
-    const contentType = res.headers.get("content-type");
-    if (contentType && contentType.includes("application/json")) {
+    const contentType = res.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
       return (await res.json()) as T;
     }
-    // @ts-expect-error dynamic return
-    return (await res.text()) as T;
-  } catch (err: any) {
+    return (await res.text()) as unknown as T;
+  } catch (_err) {
     throw new Error("Sunucuya bağlanılamadı. Lütfen backend'i çalıştırın veya NEXT_PUBLIC_API_URL değerini kontrol edin.");
   } finally {
     clearTimeout(timeout);
