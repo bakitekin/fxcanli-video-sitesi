@@ -374,3 +374,17 @@
 ⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
  GET /videos/demo 200 in 218ms
  GET /favicon.ico 200 in 12ms
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.4.6
+   - Local:        http://localhost:3000
+   - Network:      http://172.20.10.5:3000
+
+ ✓ Starting...
+ ✓ Ready in 3.1s
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.4.6
+   - Local:        http://localhost:3000
+   - Network:      http://172.20.10.5:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.2s
