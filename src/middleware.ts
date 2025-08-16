@@ -1,16 +1,14 @@
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export function middleware(_req: NextRequest) {
-  // Bazı tarayıcı indirme girişimlerini kısıtlamaya yardımcı olacak başlıklar
-  // Netlify headers ile de set ediliyor; burada SSR yanıtları için de garanti altına alıyoruz.
-  const headers = new Headers();
-  headers.set("X-Frame-Options", "DENY");
-  headers.set("Referrer-Policy", "no-referrer");
-  headers.set("X-Content-Type-Options", "nosniff");
-  headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), fullscreen=()");
-  headers.set("Cross-Origin-Opener-Policy", "same-origin");
-  headers.set("Cross-Origin-Embedder-Policy", "require-corp");
-  return new Response(null, { headers });
+  const res = NextResponse.next();
+  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set("Referrer-Policy", "no-referrer");
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), fullscreen=()");
+  // COOP/COEP bazı 3P script/DRM akışlarını engelleyebilir; şimdilik devre dışı.
+  return res;
 }
 
 export const config = {
