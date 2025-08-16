@@ -20,7 +20,8 @@ export default function VideoDetailPage() {
       try {
         const meRes = await api.me();
         setMe({ full_name: meRes.full_name, tc_no: meRes.tc_no });
-        const proxied = await fetch(`/api/videos/stream/${id}`, { credentials: 'include' }).then(r=>r.json());
+        const search = typeof window !== 'undefined' ? window.location.search : '';
+        const proxied = await fetch(`/api/videos/stream/${id}${search}`, { credentials: 'include' }).then(r=>r.json());
         if (proxied?.drm?.manifestUrl && proxied?.drm?.licenseServers) {
           setDrm({
             manifestUrl: proxied.drm.manifestUrl,

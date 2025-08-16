@@ -1,13 +1,16 @@
 import crypto from "crypto";
 
-const DEFAULT_SECRET = process.env.STREAM_SECRET || process.env.NEXT_PUBLIC_STREAM_SECRET || "dev-stream-secret";
+// Sadece server ortam değişkeninden okunur; public fallback kaldırıldı
+const DEFAULT_SECRET = process.env.STREAM_SECRET || "";
 
 export function hmacSign(payload: string, secret: string = DEFAULT_SECRET): string {
+  if (!secret) throw new Error("STREAM_SECRET missing");
   return crypto.createHmac("sha256", secret).update(payload).digest("hex");
 }
 
 export function verifyHmac(payload: string, signature: string, secret: string = DEFAULT_SECRET): boolean {
-  const expected = hmacSign(payload, secret);
+  if (!secret) return false;
+  const expected = crypto.createHmac("sha256", secret).update(payload).digest("hex");
   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
 }
 

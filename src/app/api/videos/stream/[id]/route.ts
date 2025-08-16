@@ -13,7 +13,15 @@ export async function GET(req: NextRequest) {
 
   try {
     // Backend'den video için DRM/HLS kaynak URL'i al
-    const stream = await api.getStream(id);
+    const stream = await api.getStream(id).catch(() => null);
+    // VdoCipher üzerinden doğrudan OTP alınmak istenirse query'de vdocipher=1 kullan
+    const wantsVdo = url.searchParams.get("vdocipher") === "1";
+    if (wantsVdo) {
+      const otp = await fetch(`${url.origin}/api/vdocipher/otp/${id}`, { cache: "no-store" }).then(r=>r.json());
+      if (otp?.drm?.manifestUrl && otp?.drm?.licenseServers) {
+        return new Response(JSON.stringify(otp), { headers: { "content-type": "application/json" } });
+      }
+    }
     // Eğer backend DRM bilgisi dönüyorsa doğrudan bunu ilet
     if (stream?.drm?.manifestUrl && stream?.drm?.licenseServers) {
       return new Response(
@@ -44,7 +52,9 @@ export async function GET(req: NextRequest) {
 
     return new Response(JSON.stringify({ m3u8: proxyUrl }), { headers: { "content-type": "application/json" } });
   } catch (_e) {
-    return new Response(JSON.stringify({ error: "stream error" }), { status: 500 });
+    const missing = !process.env.STREAM_SECRET;
+    const msg = missing ? "STREAM_SECRET missing" : "stream error";
+    return new Response(JSON.stringify({ error: msg }), { status: 500 });
   }
 }
 
